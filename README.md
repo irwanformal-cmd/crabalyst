@@ -39,7 +39,7 @@ custom endpoint — without changing the agent, tools, or plugins.
 
 ## Demo
 
-![Demo](assets/demo.gif)
+![Demo](assets/demo-web.gif)
 
 ## Architecture
 
