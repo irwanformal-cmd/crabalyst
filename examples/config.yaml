@@ -1,0 +1,74 @@
+# Example global configuration (~/.agent/config.yaml)
+# Providers are interchangeable brains; plugins provide capabilities.
+
+provider: mock # active provider name
+
+agent:
+  model: mock-1
+  maxTokens: 4096
+  temperature: 0
+  maxIterations: 25
+  systemPrompt: "You are a careful, analytical coding agent."
+
+providers:
+  # Deterministic offline provider (no API key needed).
+  - name: mock
+    kind: mock
+    model: mock-1
+    options:
+      script: echo
+
+  # DeepSeek (OpenAI-compatible). Set DEEPSEEK_API_KEY in the environment.
+  - name: deepseek
+    kind: openai-compatible
+    base_url: https://api.deepseek.com/v1
+    api_key_env: DEEPSEEK_API_KEY
+    model: deepseek-chat
+
+  # Qwen via DashScope compatible-mode.
+  - name: qwen
+    kind: openai-compatible
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    model: qwen-plus
+
+  # Anthropic Claude.
+  - name: claude
+    kind: anthropic
+    api_key_env: ANTHROPIC_API_KEY
+    model: claude-sonnet-4-5
+
+  # Arbitrary custom OpenAI-compatible endpoint.
+  - name: my-provider
+    kind: openai-compatible
+    base_url: https://example.com/v1
+    api_key_env: MY_API_KEY
+    model: my-model
+
+permissions:
+  allow:
+    - filesystem.read
+    - filesystem.write
+    - terminal.execute
+    - git.read
+    - git.write
+    - network
+    - http.request
+  deny: []
+
+plugins:
+  - financial-analysis
+  - gamedev
+
+pluginDirs:
+  - ../plugins # relative to the project that runs the agent
+
+mcp: {}
+#  market-data:
+#    command: npx
+#    args: ["-y", "@someorg/mcp-market-data"]
+#    enabled: true
+
+logging:
+  level: info
+  dir: logs

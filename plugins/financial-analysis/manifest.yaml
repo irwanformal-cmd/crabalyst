@@ -1,0 +1,35 @@
+name: financial-analysis
+version: 1.0.0
+description: Financial market analysis toolkit (crypto, stocks, forex)
+
+permissions: []
+
+tools:
+  - market_data
+  - technical_indicators
+  - multi_timeframe_analysis
+  - sentiment_analysis
+  - macro_analysis
+  - backtest
+  - risk_calculator
+  - journal_prediction
+
+skills:
+  - technical-analysis
+  - risk-management
+
+agents:
+  - technical
+  - sentiment
+  - macro
+  - risk
+  - coordinator
+
+commands:
+  - scan
+  - analyze
+
+hooks:
+  - prediction-log
+
+entry: entry.ts

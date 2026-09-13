@@ -1,0 +1,21 @@
+name: gamedev
+version: 1.0.0
+description: Game development toolkit (inspect, run, test, build, assets, scenes)
+
+permissions:
+  - filesystem.read
+  - filesystem.write
+  - terminal.execute
+
+tools:
+  - project_inspect
+  - run_game
+  - run_tests
+  - create_asset
+  - modify_scene
+  - build_project
+
+commands:
+  - inspect
+
+entry: entry.ts

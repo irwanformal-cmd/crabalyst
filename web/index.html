@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crabalyst 🦀 — five crab analysts watching the market</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <span class="brand">🦀 Crabalyst</span>
+      <div class="topbar-right">
+        <span id="active-subject" class="subject-chip hidden"></span>
+        <span id="status" class="status">connecting…</span>
+        <button id="settings-btn" class="settings-btn" title="Settings">⚙</button>
+      </div>
+    </header>
+
+    <!-- TICKER TAPE (live 24h watchlist, fed by the movers broadcast) -->
+    <div class="ticker" id="ticker"><div class="ticker-track" id="ticker-track"><span class="dim">loading market…</span></div></div>
+
+    <!-- QUERY BAR -->
+    <div class="querybar">
+      <input id="prompt" type="text" placeholder="Ask anything… e.g. “analisis whale BTC hari ini”, “kenapa revenue turun?”, “bandingkan BTC dengan gold”" autocomplete="off" />
+      <button id="send">Analyze</button>
+    </div>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="workspace">
+      <!-- LEFT: evidence graph + data sources + history -->
+      <aside class="col col-left">
+        <!-- EVIDENCE GRAPH -->
+        <section class="panel grow" id="panel-evidence">
+          <h3>Evidence Graph <span class="panel-sub" id="evidence-sub"></span></h3>
+          <div class="evidence-wrap">
+            <div id="evidence-graph" class="evidence-graph"></div>
+            <div id="evidence-detail" class="evidence-detail"><p class="dim">click a node…</p></div>
+          </div>
+        </section>
+        <section class="panel" id="panel-conclusion">
+          <h3>Final Conclusion</h3>
+          <div id="conclusion-body" class="conclusion-body"><p class="dim">no conclusion yet</p></div>
+        </section>
+        <!-- WHALE RADAR: every real trade becomes a particle -->
+        <section class="panel" id="panel-radar">
+          <h3>Whale Radar 🐋 <span class="panel-sub" id="radar-sub"></span> <span id="radar-mock" class="badge-mock hidden">MOCK</span></h3>
+          <div class="radar-wrap"><canvas id="whale-radar"></canvas></div>
+          <div id="trade-tape" class="trade-tape"></div>
+        </section>
+      </aside>
+
+      <!-- CENTER: analysis canvas -->
+      <main class="col col-center">
+        <section class="panel grow" id="panel-canvas">
+          <h3>Analysis Canvas <span id="canvas-sub" class="panel-sub"></span></h3>
+          <div id="canvas-empty" class="canvas-empty">
+            <p>Ask a question above. The engine will plan the analysis, pick the right analysts and visualizations automatically.</p>
+            <p class="dim">Examples: “analisis teknikal BTC” · “cari anomali dataset: 10,11,10,12,11,45,12,10” · “prediksi ETH minggu depan” · “kenapa FPS game saya drop?”</p>
+          </div>
+          <div id="canvas-viz" class="canvas-viz"></div>
+        </section>
+
+        <!-- LIVE FEED -->
+        <section class="panel" id="panel-live">
+          <h3>Live Feed <span id="live-symbol" class="panel-sub"></span></h3>
+          <div class="tf-row" role="tablist" aria-label="Rentang waktu chart">
+            <button class="tf-btn active" data-range="1h" title="1 jam terakhir, interval 1m">1H</button>
+            <button class="tf-btn" data-range="24h" title="24 jam terakhir, interval 15m">24H</button>
+            <button class="tf-btn" data-range="7d" title="7 hari terakhir, interval 1 jam">7D</button>
+            <button class="tf-btn" data-range="14d" title="14 hari terakhir, interval 2 jam">14D</button>
+            <button class="tf-btn" data-range="30d" title="30 hari terakhir, interval 4 jam">30D</button>
+          </div>
+          <div class="iv-row">
+            <span class="iv-group" role="group" aria-label="Interval kustom">
+              <button class="iv-btn" data-iv="1m" title="Interval 1 menit">1m</button>
+              <button class="iv-btn" data-iv="5m" title="Interval 5 menit">5m</button>
+              <button class="iv-btn" data-iv="15m" title="Interval 15 menit">15m</button>
+              <button class="iv-btn" data-iv="1h" title="Interval 1 jam">1H</button>
+              <button class="iv-btn" data-iv="4h" title="Interval 4 jam">4H</button>
+              <button class="iv-btn" data-iv="1d" title="Interval 1 hari">1D</button>
+            </span>
+            <span class="ind-toggles">
+              <label title="Tampilkan volume"><input type="checkbox" id="ind-vol" checked /> VOL</label>
+              <label title="Tampilkan EMA 20"><input type="checkbox" id="ind-ema20" checked /> EMA20</label>
+              <label title="Tampilkan EMA 50"><input type="checkbox" id="ind-ema50" checked /> EMA50</label>
+            </span>
+          </div>
+          <div class="live-chart-wrap"><canvas id="live-chart"></canvas></div>
+          <div class="range-hint dim" id="range-hint"></div>
+          <!-- Watchlist -->
+          <div class="watch-row" id="watch-row" aria-label="Watchlist simbol"></div>
+          <!-- Price alerts -->
+          <div class="alert-row">
+            <input id="alert-price" type="number" step="any" min="0" placeholder="Alert di harga… mis. 80000" />
+            <select id="alert-dir" title="Arah alert">
+              <option value="above">≥ (naik ke)</option>
+              <option value="below">≤ (turun ke)</option>
+            </select>
+            <button id="alert-add" title="Tambah price alert">+ Alert</button>
+          </div>
+          <ul id="alert-list" class="alert-list"></ul>
+          <ul id="news-list" class="news-list"></ul>
+        </section>
+
+        <!-- ANALYST OFFICE (main stage — moved up for prominence) -->
+        <section class="panel" id="panel-analysts">
+          <h3>Analyst Office <span class="panel-sub">ruang kerja para analis 🦀</span></h3>
+          <div id="analyst-cards" class="analyst-cards"></div>
+          <!-- INTERVENTION: call every analyst into the meeting room -->
+          <div class="intervene-row">
+            <input id="intervene-input" type="text" placeholder="intervensi: “fokus ke whale saja”, “abaikan sentimen”…" autocomplete="off" />
+            <button id="intervene-btn" title="Panggil semua analis ke ruang rapat">📢 Intervensi</button>
+          </div>
+        </section>
+
+        <!-- MARKET MOVERS (24h bubbles) -->
+        <section class="panel" id="panel-movers">
+          <h3>Market Movers <span class="panel-sub" id="movers-sub">24h</span></h3>
+          <div id="movers-list" class="movers-list"><p class="dim">loading movers…</p></div>
+        </section>
+
+        <!-- ACTIVITY (collapsed, subtle) -->
+        <section class="panel panel-subtle" id="panel-activity">
+          <h3 class="collapsible" id="activity-toggle">▸ Activity / Execution</h3>
+          <div id="activity-log" class="activity-log hidden"></div>
+        </section>
+      </main>
+
+      <!-- RIGHT: intelligence panel -->
+      <aside class="col col-right">
+        <section class="panel panel-featured" id="panel-verdict">
+          <h3 id="verdict-title">Decision</h3>
+          <div id="verdict-body" class="verdict-body"><p class="dim">no analysis yet</p></div>
+        </section>
+        <section class="panel" id="panel-findings">
+          <h3>Intelligence</h3>
+          <div id="intel-body">
+            <div class="intel-section" id="intel-primary"></div>
+            <div class="intel-section" id="intel-patterns"></div>
+            <div class="intel-section" id="intel-anomalies"></div>
+            <div class="intel-section" id="intel-relationships"></div>
+            <div class="intel-section" id="intel-forecast"></div>
+            <div class="intel-section" id="intel-levels"></div>
+            <div class="intel-section" id="intel-regimes"></div>
+            <div class="intel-section" id="intel-matrix"></div>
+            <div class="intel-section" id="intel-uncertainty"></div>
+          </div>
+        </section>
+        <section class="panel" id="panel-chat">
+          <h3>Chat <span class="panel-sub">control</span></h3>
+          <div id="chat-log" class="chat-log"></div>
+          <div class="chat-hints">
+            <button class="hint" data-q="why?">why?</button>
+            <button class="hint" data-q="show evidence">evidence</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Settings drawer -->
+    <div id="settings-overlay" class="settings-overlay hidden"></div>
+    <aside id="settings-drawer" class="settings-drawer">
+      <div class="settings-head">
+        <span>⚙ Settings</span>
+        <button id="settings-close" class="settings-close" title="Close">×</button>
+      </div>
+      <div class="settings-body">
+        <div class="panel">
+          <h3>Analysis History <button id="history-refresh" class="settings-mini-btn" title="Muat ulang">↻</button></h3>
+          <ul id="history-list" class="history-list"></ul>
+        </div>
+        <div class="panel"><h3>Providers</h3><ul id="providers"></ul></div>
+        <div class="panel"><h3>Analysts</h3><ul id="analyst-registry"></ul></div>
+        <div class="panel"><h3>Sessions</h3><ul id="sessions"></ul></div>
+        <div class="panel"><h3>Plugins</h3><ul id="plugins"></ul></div>
+        <div class="panel"><h3>Tools</h3><ul id="tools"></ul></div>
+      </div>
+    </aside>
+  </div>
+  <script src="/chart.js"></script>
+  <script src="/viz.js"></script>
+  <script src="/evidence-graph.js"></script>
+  <script src="/office.js"></script>
+  <script src="/radar.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
